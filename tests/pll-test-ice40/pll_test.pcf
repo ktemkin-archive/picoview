@@ -1,0 +1,22 @@
+set_io clk J3
+
+set_io clk_passthrough P16
+set_io clk_delayed P15
+
+set_io delay[7] C16
+set_io delay[6] B16
+set_io delay[5] D14
+set_io delay[4] D15
+set_io delay[3] D16
+set_io delay[2] E16
+set_io delay[1] E14
+set_io delay[0] F16
+
+set_io led[7] B5
+set_io led[6] B4
+set_io led[5] A2
+set_io led[4] A1
+set_io led[3] C5
+set_io led[2] C4
+set_io led[1] B3
+set_io led[0] C3
