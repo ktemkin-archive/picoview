@@ -15,12 +15,12 @@ CONSTRAINTS := $(PROJECT).pcf
 all: $(PROJECT).bin
 
 # Project heirarchy.
-$(PROJECT).blif: $(PROJECT).v
+$(PROJECT).blif: $(PROJECT).v spi_synchronizer.v
 $(PROJECT).asc: $(PROJECT).blif
 
 # Generic build instructions.
 %.blif: %.v
-	yosys -p "synth_ice40 -blif $@" $<
+	yosys -p "synth_ice40 -blif $@" $^
 
 %.asc: %.blif $(CONSTRAINTS)
 	arachne-pnr -d $(DEVICE) -p $(CONSTRAINTS) $< -o $@
