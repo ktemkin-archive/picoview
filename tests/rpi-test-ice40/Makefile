@@ -15,7 +15,7 @@ CONSTRAINTS := $(PROJECT).pcf
 all: $(PROJECT).bin
 
 # Project heirarchy.
-$(PROJECT).blif: $(PROJECT).v spi_synchronizer.v
+$(PROJECT).blif: $(PROJECT).v spi_synchronizer.v simple_spi.v
 $(PROJECT).asc: $(PROJECT).blif
 
 # Generic build instructions.

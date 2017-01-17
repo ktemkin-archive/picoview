@@ -1,3 +1,13 @@
+//
+//  Text fixture for the Simple SPI interface on the raspi.
+//
+//  UNCLASSIFIED // PROPRIETARY // GOV USE RIGHTS
+//  This will hopefully be replaced with an FOSS license soon.
+//
+//  Copyright (c) Assured Information Security, inc.
+//  Author: Kyle J. Temkin
+//
+
 `default_nettype none
 
 module rpi_test(
@@ -7,49 +17,36 @@ module rpi_test(
   output [2:0] leds
 );
 
-  wire sck, sdi, cs;
+    wire sck, sdi, cs, command_ready, word_rx_complete;
+    wire [31:0] word_to_output;
+    wire [31:0] word_received;
+    wire [7:0] command;
 
-  wire sck_rising_edge;
-  reg  sck_last_cycle;
+    reg [31:0] r0;
 
-  // Counter for the total bits observed in the current command.
-  reg [5:0] bit_count;
-  reg clear_bit_count, increment_bit_count;
+    // Bring the SPI signals into our clock domain.
+    spi_synchronizer main_sync (clk, sck_async, sdi_async, cs_async, sck, sdi, cs);
 
-  // Command and staging registers register.
-  reg [7:0] command;
-  reg [31:0] current_word;
+    // Instantiate a simple SPI reciever.
+    simple_spi transceiver(clk, word_to_output, word_received, command,
+        command_ready, word_rx_complete, sck, sdi, cs, sdo);
 
+    // Test circuit behavior
+    //  cmd 0 -- read the word in R0
+    //  cmd 1 -- write a word to R0
+    //  cmd 2 -- read the inverse of R0
 
-  //
-  // Datapath
-  //
+    // Drive the word to be output.
+    always @(*) begin
+        if ((command == 0) || (command == 1))
+            word_to_output = r0;
+        else
+            word_to_output = ~r0;
+    end
 
-  // Bring the SPI signals into our clock domain.
-  spi_synchronizer main_sync (clk, sck_async, sdi_async, cs_async, sck, sdi, cs);
-
-  // Rising edge detector for SC.
-  always @(posedge clk)
-    sck_last_cycle <= sck;
-  assign sck_rising_edge = (!sck_last_cycle) & (sck);
-
-  // SCK edge counter
-  always @(posedge clk)
-  begin
-    if (clear_bit_count == 1)
-        bit_count <= 0;
-    else if(increment_bit_count == 1)
-        bit_count <= bit_count + 1;
-  end
-
-
-
-
-
-  //
-  // Control
-  //
-
-
+    always @(posedge clk) begin
+        if ((command == 1) && (word_rx_complete))
+            r0 <= word_received;
+    end
 
 endmodule

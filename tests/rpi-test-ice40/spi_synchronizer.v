@@ -1,8 +1,19 @@
+//
+//  Simple synchronizer for SPI circuits.
+//
+//  UNCLASSIFIED // PROPRIETARY // GOV USE RIGHTS
+//  This will hopefully be replaced with an FOSS license soon.
+//
+//  Copyright (c) Assured Information Security, inc.
+//  Author: Kyle J. Temkin
+//
+
+`default_nettype none
 
 module spi_synchronizer(
   input clk,
   input sck, sdi, cs,
-  output sck_out, sdi_out, cs_out,
+  output sck_out, sdi_out, cs_out
 );
 
     parameter integer SYNC_STAGES = 2;
@@ -19,9 +30,9 @@ module spi_synchronizer(
     // Core synchronizer.
     always @(posedge clk)
     begin
-        sck_sync = {sck_sync[SYNC_BITS - 1 : 0], sck};
-        sdi_sync = {sdo_sync[SYNC_BITS - 1 : 0], sdi};
-        cs_sync =  { cs_sync[SYNC_BITS - 1 : 0], cs};
+        sck_sync = {sck_sync[SYNC_MSB - 1 : 0], sck};
+        sdi_sync = {sdi_sync[SYNC_MSB - 1 : 0], sdi};
+        cs_sync =  { cs_sync[SYNC_MSB - 1 : 0], cs};
     end
 
 endmodule
