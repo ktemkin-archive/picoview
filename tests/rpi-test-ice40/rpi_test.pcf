@@ -9,3 +9,7 @@ set_io leds[0] C8
 set_io leds[1] F7
 set_io leds[2] K9
 
+set_io mirror_sck R10
+set_io mirror_sdi T11
+set_io mirror_sdo T14
+set_io mirror_cs  T15

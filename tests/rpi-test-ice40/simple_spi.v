@@ -15,8 +15,8 @@ module simple_spi(
 
     // Control interface
     input [WORD_SIZE:0] word_to_output,
-    output reg [WORD_SIZE:0] word_received,
-    output reg [COMMAND_SIZE:0] command,
+    output reg [WORD_SIZE - 1:0] word_received,
+    output reg [COMMAND_SIZE - 1:0] command,
     output reg command_ready,
     output reg word_rx_complete,
 
@@ -121,7 +121,7 @@ module simple_spi(
                     // Shift in our command bits.
                     if (sck_rising_edge == 1) begin
                         increment_bit_count <= 1;
-                        command <= {sdi, command[(COMMAND_SIZE - 1):1]};
+                        command <= {command, sdi};
                     end
                 end
                 else begin
@@ -139,14 +139,14 @@ module simple_spi(
             // Once we've recieved a command byte, we recieve a 32-bit data word
             // and shift in/out the current word.
             STATE_DATA: begin
-                sdo <= current_word[0];
+                sdo <= current_word[WORD_SIZE - 1];
 
                 if (bit_count < (COMMAND_SIZE + WORD_SIZE)) begin
 
                     // Shift in our command bits.
                     if (sck_rising_edge == 1) begin
                         increment_bit_count <= 1;
-                        current_word <= {sdi, current_word[(WORD_SIZE - 1):1]};
+                        current_word <= {current_word, sdi};
                     end
                 end
                 else begin

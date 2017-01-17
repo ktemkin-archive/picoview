@@ -88,16 +88,16 @@ def test_tx_and_rx(dut):
 
     # Set up the command to be passed to the DUT.
     command = 234
-    command_bits = bin(command)[::-1]
+    command_bits = bin(command)[2:]
 
     # Set up the word to be transmitte to the DUT,
     # and the word the DUT will send.
     expected_output = 0xDEADBEEF
-    expected_output_bits = bin(expected_output)[::-1]
+    expected_output_bits = bin(expected_output)[2:]
     dut.word_to_output = expected_output
 
     word_to_receive = 0xABADCAFE
-    word_to_recieve_bits = bin(word_to_receive)[::-1]
+    word_to_recieve_bits = bin(word_to_receive)[2:]
 
     tb_assert_equal(dut.state, dut.STATE_RESET)
 

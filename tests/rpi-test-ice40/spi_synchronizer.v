@@ -24,8 +24,8 @@ module spi_synchronizer(
     reg [SYNC_MSB:0] cs_sync;
 
     assign sck_out = sck_sync[SYNC_MSB];
-    assign sdi     = sdi_sync[SYNC_MSB];
-    assign cs      =  cs_sync[SYNC_MSB];
+    assign sdi_out = sdi_sync[SYNC_MSB];
+    assign cs_out  =  cs_sync[SYNC_MSB];
 
     // Core synchronizer.
     always @(posedge clk)

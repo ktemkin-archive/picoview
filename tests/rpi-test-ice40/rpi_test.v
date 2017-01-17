@@ -14,7 +14,10 @@ module rpi_test(
   input clk,
   input sck_async, sdi_async, cs_async,
   output sdo,
-  output [2:0] leds
+  output [2:0] leds,
+
+  // Debug outputs
+  output mirror_sck, mirror_sdi, mirror_sdo, mirror_cs
 );
 
     wire sck, sdi, cs, command_ready, word_rx_complete;
@@ -40,8 +43,10 @@ module rpi_test(
     always @(*) begin
         if ((command == 0) || (command == 1))
             word_to_output = r0;
-        else
+        else if(command == 2)
             word_to_output = ~r0;
+        else
+            word_to_output = 32'hDEADBEEF;
     end
 
     always @(posedge clk) begin
@@ -49,4 +54,9 @@ module rpi_test(
             r0 <= word_received;
     end
 
+    //Debug outputs
+    assign mirror_sck = sck;
+    assign mirror_sdi = sdi;
+    assign mirror_sdo = sdo;
+    assign mirror_cs  = cs;
 endmodule

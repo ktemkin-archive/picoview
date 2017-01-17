@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<testsuites name="results">
-  <testsuite name="all" package="all" tests="0">
-    <testcase classname="test_simple_spi" name="test_tx_and_rx" ratio_time="31392264214420.43" sim_time_ns="6901000000000.0" time="0.21983122825622559" />
-  </testsuite>
-</testsuites>
