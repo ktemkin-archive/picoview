@@ -20,7 +20,7 @@ module dut(
     wire [31:0] sample_computation;
 
     // Sample computation: add the two halves of our input.
-    assign sample_computation = dut_input[31:16] + dut_input[15:0];
+    assign sample_computation = dut_input[31:16] * dut_input[15:0];
     assign dut_output = sample_computation[dut_signal_select];
 
 endmodule

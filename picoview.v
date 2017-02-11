@@ -11,14 +11,19 @@
 `default_nettype none
 
 module picoview(
-    input clk,
+    input baseclk,
 
     // SPI interface for communcation with the RPi
     input sck_async, sdi_async, cs_async,
     output sdo,
 
     output [2:0] leds,
+
+    // Debug outputs
+    output ets_clk, clk_out
 );
+
+    localparam DEVICE_ID = 32'hC001CAFE;
 
     // Register number definitions
     localparam REG_CONTROL        = 0;
@@ -29,6 +34,9 @@ module picoview(
     localparam REG_PRE_INPUT      = 5;
     localparam REG_POST_INPUT     = 6;
     localparam NUM_REGS           = 7;
+
+    // These aren't real registers, and thus aren't counted in NUM_REGS.
+    localparam REG_ID             = 7'b1111111;
 
     // Bits of the control register
     localparam CONTROL_BIT_RUN    = 0;
@@ -55,6 +63,13 @@ module picoview(
     assign is_write        = command[7];
     assign target_register = command[6:0];
 
+    wire clk;
+    wire locked;
+
+    // Create our main system clock.
+    ets_clkgen clkgen(baseclk, registers[REG_TIMING_CONTROL], clk, ets_clk, locked);
+    assign clk_out = clk;
+
     // Bring the SPI signals into our clock domain.
     spi_synchronizer main_sync (clk, sck_async, sdi_async, cs_async, sck, sdi, cs);
 
@@ -64,16 +79,16 @@ module picoview(
 
     // Instatiate the picoview ETS sampling core.
     offset_sampler dut (
-        .clk                         (clk),
-        .request_run                 (request_run),
-        .pre_value                   (registers[REG_PRE_INPUT]),
-        .post_value                  (registers[REG_POST_INPUT]),
-        .delay_characteristics_in    (registers[REG_TIMING_CONTROL]),
-        .dut_signal_select           (registers[REG_SIGNAL_INDEX]),
-        .total_cycles                (registers[REG_ITER_COUNT]),
-        .result_ready                (result_ready),
-        .running                     (test_running),
-        .result                      (test_result)
+        .clk                      (clk),
+        .ets_clk                  (ets_clk),
+        .request_run              (request_run),
+        .pre_value                (registers[REG_PRE_INPUT]),
+        .post_value               (registers[REG_POST_INPUT]),
+        .dut_signal_select        (registers[REG_SIGNAL_INDEX]),
+        .total_cycles             (registers[REG_ITER_COUNT]),
+        .result_ready             (result_ready),
+        .running                  (test_running),
+        .result                   (test_result),
     );
 
     // Manage register interactions.
@@ -92,6 +107,18 @@ module picoview(
                 // compose a value from the current status.
                 REG_CONTROL: begin
                     word_to_output <= {test_running, 0};
+                end
+
+                // If the user has requested the result resiger, respond
+                // back with the last result.
+                REG_RESULT: begin
+                    word_to_output <= test_result;
+                end
+
+                // If the user has requested the device's ID, return
+                // it.
+                REG_ID: begin
+                    word_to_output <= DEVICE_ID;
                 end
 
                 // For all other registers, perform a trivial read.
@@ -116,6 +143,9 @@ module picoview(
                 // Ignore writes to the "result" register.
                 REG_RESULT:;
 
+                // Ignore writes to the "ID" psuedo-register.
+                REG_ID:;
+
                 // For all other registers, use simple write semantics.
                 default: begin
                     registers[target_register] <=  word_received;
@@ -124,5 +154,12 @@ module picoview(
             endcase
         end
     end
+
+    //
+    // Diagnostic displays
+    //
+    assign leds[0] = test_running;
+    assign leds[1] = locked;
+    assign leds[2] = 0;
 
 endmodule

@@ -12,6 +12,9 @@
 
 module offset_sampler(
     input clk,
+    input ets_clk,
+
+    input baseclk,
     input request_run,
 
     // Input charactersitics
@@ -19,31 +22,28 @@ module offset_sampler(
     input [31:0] post_value,
 
     // Timing characteristics
-    input [31:0] delay_characteristics_in,
     input [31:0] dut_signal_select,
     input [31:0] total_cycles,
 
     // Output
-    output reg running,
+    output running,
     output reg result_ready,
-    output reg [31:0] result
+    output reg [31:0] result,
 );
 
     // Define our FSM states.
-    localparam STATE_RESET   = 8'b00000000;
-    localparam STATE_WAIT    = 8'b00000001;
-    localparam STATE_PREPARE = 8'b00000010;
-    localparam STATE_PRIME   = 8'b00000100;
-    localparam STATE_SAMPLE  = 8'b00001000;
-    localparam STATE_COUNT   = 8'b00010000;
-    localparam STATE_BUBBLE1 = 8'b00100000;
-    localparam STATE_BUBBLE2 = 8'b01000000;
-    localparam STATE_OUTPUT  = 8'b10000000;
-    reg [7:0] state;
+    localparam STATE_RESET   = 9'b000000000;
+    localparam STATE_WAIT    = 9'b000000001;
+    localparam STATE_PREPARE = 9'b000000010;
+    localparam STATE_PRIME   = 9'b000000100;
+    localparam STATE_SAMPLE  = 9'b000001000;
+    localparam STATE_COUNT   = 9'b000010000;
+    localparam STATE_BUBBLE1 = 9'b000100000;
+    localparam STATE_BUBBLE2 = 9'b001000000;
+    localparam STATE_OUTPUT1 = 9'b010000000;
+    localparam STATE_OUTPUT2 = 9'b100000000;
+    reg [8:0] state;
 
-
-    // Latched version of our inputs.
-    reg [31:0] delay_characteristics;
 
     // I/O for the device under test.
     reg dut_load_pre;
@@ -69,9 +69,6 @@ module offset_sampler(
     reg clear_iter_count;
     reg increment_iter_count;
     reg [31:0] iter_count;
-
-    // Generate the clock to be used for offset sampling.
-    ets_clkgen clkgen(clk, delay_characteristics, ets_clk);
 
     //
     // Datapath
@@ -120,6 +117,11 @@ module offset_sampler(
     //
     // Control
     //
+    initial begin
+        // Ignored on lattice FPGAs, so this must always have state code 0.
+        state <= STATE_RESET;
+    end
+
     always @(posedge clk) begin
 
         // Default our control signals to unasserted.
@@ -186,17 +188,33 @@ module offset_sampler(
                 // If we've completed our run, move to the output state.
                 // Otherwise, continue to another iteration.
                 if (iter_count >= total_cycles)
-                    state <= STATE_OUTPUT;
+                    state <= STATE_OUTPUT1;
                 else
                     state <= STATE_PREPARE;
             end
 
+            // Wait state: after asserting count, we need to give the
+            // counter a cycle to update before our result is ready.
+            STATE_OUTPUT1: begin
+                state <= STATE_OUTPUT2;
+            end
+
             // Output state: output the value achieved during this run.
-            STATE_OUTPUT: begin
+            STATE_OUTPUT2: begin
                 result_ready <= 1;
                 result <= one_count;
                 state <= STATE_WAIT;
             end
         endcase
     end
+
+// If we're simulating, also generate a VCD we can view.
+`ifdef COCOTB_SIM
+    initial begin
+        $dumpfile ("offset_sampler.vcd");
+        $dumpvars;
+        #1;
+    end
+`endif
+
 endmodule

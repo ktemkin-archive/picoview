@@ -1,4 +1,4 @@
-set_io clk R9
+set_io baseclk R9
 
 set_io sck_async H11
 set_io sdi_async A6
@@ -8,3 +8,6 @@ set_io sdo A7
 set_io leds[0] C8
 set_io leds[1] F7
 set_io leds[2] K9
+
+set_io ets_clk A5
+set_io clk_out B4

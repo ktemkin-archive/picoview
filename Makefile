@@ -9,7 +9,11 @@
 # Project Metadata
 PROJECT     := picoview
 DEVICE      := 8k
+PACKAGE     := ct256
+#CONSTRAINTS := picoview-breakout.pcf
 CONSTRAINTS := $(PROJECT).pcf
+SEED        ?= 1
+QUIET       ?= -q
 
 # Normally, we want to produce the final bitstream.
 all: $(PROJECT).bin
@@ -20,10 +24,10 @@ $(PROJECT).asc: $(PROJECT).blif
 
 # Generic build instructions.
 %.blif: %.v
-	yosys -q -p "synth_ice40 -blif $@" $^
+	yosys $(QUIET) -p "synth_ice40 -blif $@" $^
 
 %.asc: %.blif $(CONSTRAINTS)
-	arachne-pnr -q -d $(DEVICE) -p $(CONSTRAINTS) $< -o $@
+	arachne-pnr -s $(SEED) $(QUIET) -d $(DEVICE) -P $(PACKAGE) -p $(CONSTRAINTS) $< -o $@
 
 %.bin: %.asc $(CONSTRAINTS)
 	icepack $< $@
