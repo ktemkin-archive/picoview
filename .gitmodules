@@ -1,0 +1,6 @@
+[submodule "zynq/u-boot"]
+	path = zynq/u-boot
+	url = git://git.denx.de/u-boot.git
+[submodule "zynq/linux-xlnx"]
+	path = zynq/linux-xlnx
+	url = https://github.com/Xilinx/linux-xlnx.git
