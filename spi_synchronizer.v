@@ -11,9 +11,9 @@
 `default_nettype none
 
 module spi_synchronizer(
-  input clk,
-  input sck, sdi, cs,
-  output sck_out, sdi_out, cs_out
+  input wire clk,
+  input wire sck, sdi, cs,
+  output wire sck_out, sdi_out, cs_out
 );
 
     parameter integer SYNC_STAGES = 2;

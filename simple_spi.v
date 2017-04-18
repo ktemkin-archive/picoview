@@ -11,17 +11,17 @@
 `default_nettype none
 
 module simple_spi(
-    input clk,
+    input wire clk,
 
     // Control interface
-    input [WORD_SIZE:0] word_to_output,
+    input wire [WORD_SIZE:0] word_to_output,
     output reg [WORD_SIZE - 1:0] word_received,
     output reg [COMMAND_SIZE - 1:0] command,
     output reg command_ready,
     output reg word_rx_complete,
 
     // SPI
-    input sck, sdi, cs,
+    input wire sck, sdi, cs,
     output reg sdo
 );
 

@@ -11,16 +11,16 @@
 `default_nettype none
 
 module picoview(
-    input baseclk,
+    input wire baseclk,
 
     // SPI interface for communcation with the RPi
-    input sck_async, sdi_async, cs_async,
-    output sdo,
+    input wire sck_async, sdi_async, cs_async,
+    output wire sdo,
 
-    output [2:0] leds,
+    output wire [2:0] leds,
 
     // Debug outputs
-    output ets_clk, clk_out
+    output wire ets_clk, clk_out
 );
 
     localparam DEVICE_ID = 32'hC001CAFE;
@@ -46,13 +46,13 @@ module picoview(
     reg [31:0] word_to_output;
     wire [31:0] word_received;
 
-    wire request_run;
+    reg request_run;
     wire result_ready;
     wire test_running;
     wire [31:0] test_result;
 
     // Command control...
-    reg [7:0] command;
+    wire [7:0] command;
     wire is_write;
     wire [6:0] target_register;
 
@@ -88,7 +88,7 @@ module picoview(
         .total_cycles             (registers[REG_ITER_COUNT]),
         .result_ready             (result_ready),
         .running                  (test_running),
-        .result                   (test_result),
+        .result                   (test_result)
     );
 
     // Manage register interactions.
@@ -160,6 +160,6 @@ module picoview(
     //
     assign leds[0] = test_running;
     assign leds[1] = locked;
-    assign leds[2] = 0;
+    assign leds[2] = sck;
 
 endmodule

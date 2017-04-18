@@ -1,0 +1,13 @@
+NET "baseclk"		LOC = "P94"; #32mhz reference clk
+
+NET "leds<0>"     LOC = "P48";
+NET "leds<1>"     LOC = "P51";
+NET "leds<2>"     LOC = "P56";
+
+NET "sck_async"   LOC = "P114";
+NET "sdi_async"   LOC = "P115";
+NET "cs_async"    LOC = "P116";
+NET "sdo"         LOC = "P117";
+
+NET "ets_clk"     LOC = "P133";
+NET "clk_out"     LOC = "P134";

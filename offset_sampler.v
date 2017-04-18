@@ -11,24 +11,24 @@
 `default_nettype none
 
 module offset_sampler(
-    input clk,
-    input ets_clk,
+    input wire clk,
+    input wire ets_clk,
 
-    input baseclk,
-    input request_run,
+    input wire baseclk,
+    input wire request_run,
 
     // Input charactersitics
-    input [31:0] pre_value,
-    input [31:0] post_value,
+    input wire [31:0] pre_value,
+    input wire [31:0] post_value,
 
     // Timing characteristics
-    input [31:0] dut_signal_select,
-    input [31:0] total_cycles,
+    input wire [31:0] dut_signal_select,
+    input wire [31:0] total_cycles,
 
     // Output
-    output running,
+    output wire running,
     output reg result_ready,
-    output reg [31:0] result,
+    output reg [31:0] result
 );
 
     // Define our FSM states.
@@ -52,7 +52,6 @@ module offset_sampler(
     wire dut_output;
 
     // !!! Signals in the ETS clock domain.
-    wire ets_clk;
     reg ets_offset_sample;
     reg [1:0] sample_request_synchronizer;
     // </ets-domain>
