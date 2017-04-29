@@ -14,6 +14,7 @@ class PicoViewDevice(object):
     """
 
     REG_CONTROL        = 0
+    REG_STATUS         = 0
     REG_RESULT         = 1
     REG_SIGNAL_INDEX   = 2
     REG_TIMING_CONTROL = 3
@@ -23,6 +24,7 @@ class PicoViewDevice(object):
     REG_ID             = 0b1111111
 
     CONTROL_BIT_RUN    = 0
+    STATUS_BIT_RUNNING = 0
 
     def __init__(self, connection):
         """
@@ -41,6 +43,7 @@ class PicoViewDevice(object):
         self._write_register(self.REG_TIMING_CONTROL, timing_control)
         self._write_register(self.REG_ITER_COUNT, iterations)
         self._start_test()
+        self._wait_for_test_completion()
 
         return self._read_register(self.REG_RESULT)
 
@@ -62,6 +65,22 @@ class PicoViewDevice(object):
         Instantiates a single test cycle.
         """
         self._write_register(self.REG_CONTROL, 1 << self.CONTROL_BIT_RUN)
+
+
+    def _wait_for_test_completion(self):
+        """
+        Blocks execution until the current test is complete.
+        """
+        while self._test_running():
+            pass
+
+
+    def _test_running(self):
+        """
+        Returns true IFF a given test is running.
+        """
+        status = self._read_register(self.REG_STATUS)
+        return bool(status & (1 << self.STATUS_BIT_RUNNING))
 
 
     def _read_register(self, number):
