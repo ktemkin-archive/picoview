@@ -11,3 +11,7 @@ NET "sdo"         LOC = "P117";
 
 NET "ets_clk"     LOC = "P133";
 NET "clk_out"     LOC = "P134";
+
+# Allow us to use the clock as a source for internal logic.
+PIN "ets_clk_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;
+PIN "clk_out_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;

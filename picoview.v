@@ -67,7 +67,8 @@ module picoview(
     wire locked;
 
     // Create our main system clock.
-    ets_clkgen clkgen(baseclk, registers[REG_TIMING_CONTROL], clk, ets_clk, locked);
+	 // XXX increments phase each run?
+    ets_clkgen clkgen(baseclk, registers[REG_TIMING_CONTROL], request_run, clk, ets_clk, locked);
     assign clk_out = clk;
 
     // Bring the SPI signals into our clock domain.
