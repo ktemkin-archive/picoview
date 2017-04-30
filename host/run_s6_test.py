@@ -22,21 +22,35 @@ def _has_overflowed():
 
 i = 0
 time = []
-results = []
+results = {}
+
+for i in range(16):
+    results[i] = []
 
 TOTAL_RUNS = 1024
+TIME_PER_PHASE = 23 #picoseconds
 
 while not _has_overflowed():
     __adjust_phase(True)
 
-    raw_result = pv.run_test(TOTAL_RUNS, 0x00000000, 0x0008FFFF, 0x00, 2)
-    result = raw_result / 1024.0
+    for i in range(16):
+        raw_result = pv.run_test(TOTAL_RUNS, 0x00000000, 0x0001FFFF, 0x00, i)
+        result = raw_result / 1024.0
 
-    results.append(result)
-    time.append(i * 23)
+        results[i].append(result)
+
+    time.append(i * TIME_PER_PHASE)
     i += 1
 
-plt.plot(time, results)
+args = []
+labels = []
+for i in range(16):
+    args.append(results[i])
+    args.append('')
+    labels.append(str(i))
+
+plt.plot(time, *args)
+plt.legend(labels)
 plt.ylabel('probability')
 plt.xlabel('time')
 plt.show()

@@ -26,7 +26,8 @@ class PicoViewDevice(object):
     REG_ID                = 0b1111111
 
     CONTROL_BIT_RUN       = 0
-    STATUS_BIT_RUNNING    = 0
+    STATUS_BIT_RUNNING    = 1
+    STATUS_BIT_LOCKED     = 3
     CONTROL_BIT_RESET_CLK = 4
 
     def __init__(self, connection):
@@ -58,6 +59,20 @@ class PicoViewDevice(object):
         Resets the PicoView instance's internal clocking.
         """
         self._write_register(self.REG_CONTROL, 1 << self.CONTROL_BIT_RESET_CLK)
+        self._write_register(self.REG_CONTROL, 0)
+
+        # Wait for the device's PLL to lock.
+        while not self._pll_locked():
+            pass
+
+
+    def _pll_locked(self):
+        """
+        Returns true IFF the system's PLL is locked.
+        """
+        status = self._read_register(self.REG_STATUS)
+        return bool(status & (1 << self.STATUS_BIT_LOCKED))
+
 
 
     def _verify_id(self):
@@ -68,8 +83,8 @@ class PicoViewDevice(object):
 
         id = self._read_register(self.REG_ID)
 
-        if id != self.DEVICE_ID:
-            raise IOError("Invalid device ID! Check your connections?")
+        if id != self.EXPECTED_DEVICE_ID:
+            raise IOError("Invalid device ID ({})! Check your connections?".format(hex(id)))
 
 
     def _start_test(self):
