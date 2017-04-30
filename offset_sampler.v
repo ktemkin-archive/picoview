@@ -84,7 +84,7 @@ module offset_sampler(
     end
 
     // Core device under test.
-    dut sample_dut (dut_input_buffer, dut_signal_select, dut_output);
+    dut sample_dut (clk, dut_input_buffer, dut_signal_select, dut_output);
 
     // Offset sampling register for the DUT output.
     always @(posedge ets_clk)

@@ -1,17 +1,16 @@
 NET "baseclk"		LOC = "P94"; #32mhz reference clk
 
 NET "leds<0>"     LOC = "P48";
-NET "leds<1>"     LOC = "P51";
-NET "leds<2>"     LOC = "P56";
+NET "leds<1>"     LOC = "P56";
+NET "leds<2>"     LOC = "P61";
 
 NET "sck_async"   LOC = "P114";
 NET "sdi_async"   LOC = "P115";
 NET "cs_async"    LOC = "P116";
 NET "sdo"         LOC = "P117";
 
-NET "ets_clk"     LOC = "P133";
-NET "clk_out"     LOC = "P134";
+# Allow us to use the clock as a source for internal logic
+# XXX ONLY FOR DEBUG XXX
 
-# Allow us to use the clock as a source for internal logic.
-PIN "ets_clk_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;
-PIN "clk_out_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;
+PIN "clkgen/ref_clk_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;
+PIN "dut/sample_dut/test_clk_BUFG.O" CLOCK_DEDICATED_ROUTE = FALSE;
