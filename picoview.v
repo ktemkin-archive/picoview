@@ -17,16 +17,14 @@ module picoview(
     input wire sck_async, sdi_async, cs_async,
     output wire sdo,
 
-    output wire [2:0] leds,
-
-    // Debug outputs
-    output wire ets_clk, clk_out
+    output wire [2:0] leds
 );
 
     localparam DEVICE_ID = 32'hC001CAFE;
 
     // Register number definitions
-    localparam REG_CONTROL        = 0;
+    localparam REG_CONTROL        = 0; // control when written
+    localparam REG_STATUS          = 0; // status when read
     localparam REG_RESULT         = 1;
     localparam REG_SIGNAL_INDEX   = 2;
     localparam REG_TIMING_CONTROL = 3;
@@ -42,9 +40,14 @@ module picoview(
     localparam CONTROL_BIT_RUN    = 0;
     localparam CONTROL_BIT_STATUS = 1;
 
+    wire ets_clk;
+
     wire sck, sdi, cs, command_ready, word_rx_complete;
     reg [31:0] word_to_output;
     wire [31:0] word_received;
+
+    reg request_clk_reset;
+    reg hack_phase_adjust;
 
     reg request_run;
     wire result_ready;
@@ -67,9 +70,7 @@ module picoview(
     wire locked;
 
     // Create our main system clock.
-	 // XXX increments phase each run?
-    ets_clkgen clkgen(baseclk, registers[REG_TIMING_CONTROL], request_run, clk, ets_clk, locked);
-    assign clk_out = clk;
+    ets_clkgen clkgen(request_clk_reset, baseclk, registers[REG_TIMING_CONTROL], hack_phase_adjust, clk, ets_clk, locked);
 
     // Bring the SPI signals into our clock domain.
     spi_synchronizer main_sync (clk, sck_async, sdi_async, cs_async, sck, sdi, cs);
@@ -98,6 +99,10 @@ module picoview(
         // Assume any per-cycle control instructions are zero
         // unless explicitly asserted.
         request_run <= 0;
+        request_clk_reset <= 0;
+
+        // XXX
+        hack_phase_adjust <= 0;
 
         // If we've just received a new command, update our knowldegde of
         // the current command, and read back the current register.
@@ -106,8 +111,8 @@ module picoview(
 
                 // If the user has requested the control/status register,
                 // compose a value from the current status.
-                REG_CONTROL: begin
-                    word_to_output <= {test_running, 0};
+                REG_STATUS: begin
+                    word_to_output <= {locked, 1'b0, test_running, 1'b0};
                 end
 
                 // If the user has requested the result resiger, respond
@@ -139,6 +144,8 @@ module picoview(
                 // event inputs provided to us.
                 REG_CONTROL: begin
                     request_run <= word_received[CONTROL_BIT_RUN];
+                    hack_phase_adjust <= word_received[2];
+                    request_clk_reset <= word_received[4];
                 end
 
                 // Ignore writes to the "result" register.
@@ -155,6 +162,7 @@ module picoview(
             endcase
         end
     end
+
 
     //
     // Diagnostic displays
