@@ -32,17 +32,16 @@ module offset_sampler(
 );
 
     // Define our FSM states.
-    localparam STATE_RESET   = 9'b000000000;
-    localparam STATE_WAIT    = 9'b000000001;
-    localparam STATE_PREPARE = 9'b000000010;
-    localparam STATE_PRIME   = 9'b000000100;
-    localparam STATE_SAMPLE  = 9'b000001000;
-    localparam STATE_COUNT   = 9'b000010000;
-    localparam STATE_BUBBLE1 = 9'b000100000;
-    localparam STATE_BUBBLE2 = 9'b001000000;
-    localparam STATE_OUTPUT1 = 9'b010000000;
-    localparam STATE_OUTPUT2 = 9'b100000000;
-    reg [8:0] state;
+    localparam STATE_RESET   = 8'b00000000;
+    localparam STATE_WAIT    = 8'b00000001;
+    localparam STATE_PRIME   = 8'b00000010;
+    localparam STATE_SAMPLE  = 8'b00000100;
+    localparam STATE_COUNT   = 8'b00001000;
+    localparam STATE_BUBBLE1 = 8'b00010000;
+    localparam STATE_BUBBLE2 = 8'b00100000;
+    localparam STATE_OUTPUT1 = 8'b01000000;
+    localparam STATE_OUTPUT2 = 8'b10000000;
+    reg [7:0] state;
 
 
     // I/O for the device under test.
@@ -145,25 +144,19 @@ module offset_sampler(
                 clear_iter_count <= 1;
 
                 if (request_run)
-                    state <= STATE_PREPARE;
+                    state <= STATE_PRIME;
             end
 
-            // Prepare state: prepare the test by applying the "before" input
-            // value to the DUT inputs.
-            STATE_PREPARE: begin
-                dut_load_pre <= 1;
-                state <= STATE_PRIME;
-
-            end
 
             // Prime state: prime the test by the post-clock stimulus.
             STATE_PRIME: begin
-                dut_load_post <= 1;
+                dut_load_pre <= 1;
                 state <= STATE_SAMPLE;
             end
 
             // Sample state-- give the circuit time to sample.
             STATE_SAMPLE: begin
+                dut_load_post <= 1;
                 increment_iter_count <= 1;
                 state <= STATE_BUBBLE1;
             end
@@ -189,7 +182,7 @@ module offset_sampler(
                 if (iter_count >= total_cycles)
                     state <= STATE_OUTPUT1;
                 else
-                    state <= STATE_PREPARE;
+                    state <= STATE_PRIME;
             end
 
             // Wait state: after asserting count, we need to give the

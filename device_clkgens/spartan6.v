@@ -12,6 +12,7 @@
 
 module ets_clkgen(
     input wire reset,
+
     input wire baseclk,
     input wire [7:0] delay,
 
@@ -89,12 +90,12 @@ module ets_clkgen(
       .STARTUP_WAIT("FALSE")                // Delay config DONE until DCM_SP LOCKED (TRUE/FALSE)
    )
    DCM_SP_ref (
-      .CLKFX(ref_clk),      // 1-bit output: 0 degree clock output
+      .CLKFX(ref_clk),     // 1-bit output: 0 degree clock output
       .CLKFB(ref_clk),     // 1-bit input: Clock feedback input
       .CLKIN(baseclk),     // 1-bit input: Clock input
       .DSSEN(local_gnd),   // 1-bit input: Unsupported, specify to GND.
-      .PSEN(local_gnd),   // 1-bit input: Unsupported, specify to GND.
-      .RST(reset)            // 1-bit input: Active high reset input
+      .PSEN(local_gnd),    // 1-bit input: Unsupported, specify to GND.
+      .RST(0)              // 1-bit input: Active high reset input
    );
 
 

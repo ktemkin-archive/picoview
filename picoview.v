@@ -24,7 +24,7 @@ module picoview(
 
     // Register number definitions
     localparam REG_CONTROL        = 0; // control when written
-    localparam REG_STATUS          = 0; // status when read
+    localparam REG_STATUS         = 0; // status when read
     localparam REG_RESULT         = 1;
     localparam REG_SIGNAL_INDEX   = 2;
     localparam REG_TIMING_CONTROL = 3;
@@ -37,8 +37,10 @@ module picoview(
     localparam REG_ID             = 7'b1111111;
 
     // Bits of the control register
-    localparam CONTROL_BIT_RUN    = 0;
-    localparam CONTROL_BIT_STATUS = 1;
+    localparam CONTROL_BIT_RUN       = 0;
+    localparam CONTROL_BIT_STATUS    = 1;
+    localparam CONTROL_BIT_LOCKED    = 3;
+    localparam CONTROL_BIT_RESET_CLK = 4;
 
     wire ets_clk;
 
@@ -99,7 +101,6 @@ module picoview(
         // Assume any per-cycle control instructions are zero
         // unless explicitly asserted.
         request_run <= 0;
-        request_clk_reset <= 0;
 
         // XXX
         hack_phase_adjust <= 0;
@@ -145,6 +146,9 @@ module picoview(
                 REG_CONTROL: begin
                     request_run <= word_received[CONTROL_BIT_RUN];
                     hack_phase_adjust <= word_received[2];
+
+                    // Note: request_clk_reset is latching; and must be
+                    // cleared.
                     request_clk_reset <= word_received[4];
                 end
 
