@@ -13,18 +13,21 @@ class PicoViewDevice(object):
     Represents a PicoView connection via a GreatFET object.
     """
 
-    REG_CONTROL        = 0
-    REG_STATUS         = 0
-    REG_RESULT         = 1
-    REG_SIGNAL_INDEX   = 2
-    REG_TIMING_CONTROL = 3
-    REG_ITER_COUNT     = 4
-    REG_PRE_INPUT      = 5
-    REG_POST_INPUT     = 6
-    REG_ID             = 0b1111111
+    EXPECTED_DEVICE_ID = 0xc001cafe
 
-    CONTROL_BIT_RUN    = 0
-    STATUS_BIT_RUNNING = 0
+    REG_CONTROL           = 0
+    REG_STATUS            = 0
+    REG_RESULT            = 1
+    REG_SIGNAL_INDEX      = 2
+    REG_TIMING_CONTROL    = 3
+    REG_ITER_COUNT        = 4
+    REG_PRE_INPUT         = 5
+    REG_POST_INPUT        = 6
+    REG_ID                = 0b1111111
+
+    CONTROL_BIT_RUN       = 0
+    STATUS_BIT_RUNNING    = 0
+    CONTROL_BIT_RESET_CLK = 4
 
     def __init__(self, connection):
         """
@@ -34,6 +37,8 @@ class PicoViewDevice(object):
         # Store our communications connection.
         self.comms = connection
         self._verify_id()
+
+        self.reset_clocking()
 
 
     def run_test(self, iterations, pre_input, post_input, timing_control, signal_index):
@@ -48,6 +53,13 @@ class PicoViewDevice(object):
         return self._read_register(self.REG_RESULT)
 
 
+    def reset_clocking(self):
+        """
+        Resets the PicoView instance's internal clocking.
+        """
+        self._write_register(self.REG_CONTROL, 1 << self.CONTROL_BIT_RESET_CLK)
+
+
     def _verify_id(self):
         """
         Verifies the connection to the PicoView device by reading its ID register.
@@ -56,7 +68,7 @@ class PicoViewDevice(object):
 
         id = self._read_register(self.REG_ID)
 
-        if id != 0xc001cafe:
+        if id != self.DEVICE_ID:
             raise IOError("Invalid device ID! Check your connections?")
 
 
